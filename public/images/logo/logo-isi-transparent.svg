@@ -1,0 +1,58 @@
+<svg width="300" height="350" viewBox="0 0 300 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Heart Shape (outline only) -->
+  <path d="M150 85 
+           C165 60, 195 52, 220 70
+           C245 88, 248 118, 235 145
+           C222 172, 200 195, 150 240
+           C100 195, 78 172, 65 145
+           C52 118, 55 88, 80 70
+           C105 52, 135 60, 150 85 Z" 
+        fill="none" 
+        stroke="#2E7D42" 
+        stroke-width="16" 
+        stroke-linejoin="round"/>
+  
+  <!-- Left Leaf -->
+  <path d="M105 230 
+           C95 235, 85 245, 80 260
+           C85 255, 95 250, 105 248
+           L115 240 Z" 
+        fill="#2E7D42"/>
+  
+  <!-- Right Leaf -->
+  <path d="M195 230 
+           C205 235, 215 245, 220 260
+           C215 255, 205 250, 195 248
+           L185 240 Z" 
+        fill="#2E7D42"/>
+  
+  <!-- Leaf Details (veins) -->
+  <path d="M92.5 247 Q95 252, 98 248" stroke="white" stroke-width="1.5" fill="none" opacity="0.5"/>
+  <path d="M207.5 247 Q205 252, 202 248" stroke="white" stroke-width="1.5" fill="none" opacity="0.5"/>
+  
+  <!-- Medical Cross Shadow -->
+  <g opacity="0.15">
+    <rect x="137" y="107" width="26" height="60" rx="2" fill="#000"/>
+    <rect x="124" y="120" width="52" height="26" rx="2" fill="#000"/>
+  </g>
+  
+  <!-- Medical Cross -->
+  <rect x="135" y="105" width="30" height="65" rx="3" fill="#E53935"/>
+  <rect x="120" y="120" width="60" height="30" rx="3" fill="#E53935"/>
+  
+  <!-- Cross Highlight -->
+  <rect x="138" y="108" width="8" height="25" rx="1" fill="#FFFFFF" opacity="0.25"/>
+  
+  <!-- ISI Text with subtle shadow -->
+  <text x="150" y="315" 
+        font-family="Arial, Helvetica, sans-serif" 
+        font-size="72" 
+        font-weight="900" 
+        fill="#2E7D42" 
+        text-anchor="middle"
+        letter-spacing="8">ISI</text>
+  
+  <!-- Text underline/accent -->
+  <rect x="100" y="325" width="100" height="3" rx="1.5" fill="#2E7D42" opacity="0.3"/>
+</svg>
+

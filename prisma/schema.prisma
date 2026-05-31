@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("STAFF")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ledgersAsScheduler Ledger[] @relation("LedgerScheduler")
+  ledgersAsPresenter Ledger[] @relation("LedgerPresenter")
+  commissions        Commission[]
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String   @db.Text
+  imageUrl    String?
+  price       Float
+  stockAvailable Int   @default(0)  // Current stock ready/available
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  stocks            Stock[]
+  stockTransactions StockTransaction[]
+}
+
+model Stock {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  quantity  Int
+  date      DateTime @db.Date
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, date])
+  @@index([productId])
+  @@index([date])
+}
+
+model StockTransaction {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  type        String
+  quantity    Int
+  description String?  @db.Text
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([date])
+  @@index([type])
+}
+
+model CashFlow {
+  id          Int      @id @default(autoincrement())
+  type        String
+  amount      Float
+  description String?  @db.Text
+  balance     Float
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([date])
+  @@index([type])
+}
+
+
+model Ledger {
+  id        Int      @id @default(autoincrement())
+  
+  // User Relations
+  schedulerId  Int?    // Penjadwal
+  presenterId  Int?    // Presenter
+  
+  // Basic Info
+  date         DateTime @default(now())
+  session      Int      @default(1)  // Sesi
+  audiens      Int      @default(0)  // Jumlah audiens untuk perhitungan performa
+  month        Int
+  year         Int
+  
+  // Expenses (Pengeluaran)
+  bop          Float    @default(0)  // Biaya Operasional
+  skl          Float    @default(0)  // Soklin
+  
+  // Products Sold (Produk Laku)
+  moringa60    Int      @default(0)  // Moringa 60 laku
+  moringa30    Int      @default(0)  // Moringa 30 laku
+  annora       Int      @default(0)  // Annora laku
+  alami        Int      @default(0)  // Alami laku (produk baru)
+  uramaxLaku   Int      @default(0)  // Uramax laku
+  
+  // Vitamin
+  vitamin      Int      @default(0)  // Jumlah vitamin (@ Rp 2.000)
+  
+  // Repeat Order (RO)
+  roMoringa    Int      @default(0)  // RO Moringa
+  roUramax     Int      @default(0)  // RO Uramax
+  roAnnora     Int      @default(0)  // RO Annora
+  
+  // Bonus Produk
+  bonusUramax  Int      @default(0)  // Bonus Uramax (@ Rp 90)
+  bonusMoringa Int      @default(0)  // Bonus Moringa (@ Rp 110)
+  bonusAnnora  Int      @default(0)  // Bonus Annora (@ Rp 100)
+  bonusAlami   Int      @default(0)  // Bonus Alami (@ Rp 100)
+  
+  // Retur Produk
+  returMoringaTerpakai Int  @default(0)  // Retur Moringa terpakai (@ Rp 110)
+  returMoringaUtuh     Int  @default(0)  // Retur Moringa utuh (@ Rp 130)
+  returUramaxTerpakai  Int  @default(0)  // Retur Uramax terpakai (@ Rp 90)
+  returUramaxUtuh      Int  @default(0)  // Retur Uramax utuh (@ Rp 125)
+  returAnnoraTerpakai  Int  @default(0)  // Retur Annora terpakai (@ Rp 100)
+  returAnnoraUtuh      Int  @default(0)  // Retur Annora utuh (@ Rp 140)
+  
+  // Other Income
+  bonus        Float    @default(0)  // Bonus dari produk
+  dp           Float    @default(0)  // Down Payment
+  
+  // Calculated Fields (Auto-calculated)
+  totalBop         Float    @default(0)  // BOP + SKL
+  revenue          Float    @default(0)  // Total dari produk laku (× 250) + bonus + DP
+  penghasilan      Float    @default(0)  // Revenue - Total BOP
+  komisiPenjadwal  Float    @default(0)  // 40% dari penghasilan
+  komisiPresenter  Float    @default(0)  // 60% dari penghasilan  
+  performa         Float    @default(0)  // (total produk laku / audiens) × 100%
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  scheduler User? @relation("LedgerScheduler", fields: [schedulerId], references: [id], onDelete: SetNull)
+  presenter User? @relation("LedgerPresenter", fields: [presenterId], references: [id], onDelete: SetNull)
+
+  @@index([schedulerId])
+  @@index([presenterId])
+  @@index([date])
+  @@index([year, month])
+}
+
+
+model Commission {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  amount    Float
+  month     Int
+  year      Int
+  description String? @db.Text
+  role      String   @default("PRESENTER") // PRESENTER or SCHEDULER
+  
+  // Detailed Metrics (Pencapaian)
+  sessions      Int?    @default(0)
+  audience      Int?    @default(0)
+  
+  // Sales (Jumlah Produk)
+  moringaSold   Int?    @default(0)
+  uramaxSold    Int?    @default(0)
+  annoraSold    Int?    @default(0)
+  
+  // Repeat Orders (RO)
+  roMoringa     Int?    @default(0)
+  roUramax      Int?    @default(0)
+  roAnnora      Int?    @default(0)
+  
+  // Kasbon (Stok Awal/Ambil)
+  kasbonMoringa Int?    @default(0)
+  kasbonUramax  Int?    @default(0)
+  kasbonAnnora  Int?    @default(0)
+  
+  // Retur (Kembali)
+  returnMoringa Int?    @default(0)
+  returnUramax  Int?    @default(0)
+  returnAnnora  Int?    @default(0)
+  
+  // Bonuses
+  bonusMoringa  Float?  @default(0)
+  bonusUramax   Float?  @default(0)
+  bonusAnnora   Float?  @default(0)
+  bonusVitamin  Float?  @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, year, month])
+  @@index([year, month])
+}
