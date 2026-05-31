@@ -26,7 +26,14 @@ export async function GET(request: NextRequest) {
                 year: targetYear,
             },
             include: {
-                user: {
+                scheduler: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                presenter: {
                     select: {
                         id: true,
                         name: true,
@@ -37,18 +44,36 @@ export async function GET(request: NextRequest) {
         });
 
         const userSummary = ledgers.reduce((acc: any, ledger) => {
-            const userId = ledger.userId;
-            if (!acc[userId]) {
-                acc[userId] = {
-                    userId,
-                    userName: ledger.user.name,
-                    userEmail: ledger.user.email,
-                    totalEarnings: 0,
-                    entryCount: 0,
-                };
+            if (ledger.scheduler) {
+                const sId = ledger.scheduler.id;
+                if (!acc[sId]) {
+                    acc[sId] = {
+                        userId: sId,
+                        userName: ledger.scheduler.name,
+                        userEmail: ledger.scheduler.email,
+                        totalEarnings: 0,
+                        entryCount: 0,
+                    };
+                }
+                acc[sId].totalEarnings += ledger.komisiPenjadwal;
+                acc[sId].entryCount += 1;
             }
-            acc[userId].totalEarnings += ledger.amount;
-            acc[userId].entryCount += 1;
+
+            if (ledger.presenter) {
+                const pId = ledger.presenter.id;
+                if (!acc[pId]) {
+                    acc[pId] = {
+                        userId: pId,
+                        userName: ledger.presenter.name,
+                        userEmail: ledger.presenter.email,
+                        totalEarnings: 0,
+                        entryCount: 0,
+                    };
+                }
+                acc[pId].totalEarnings += ledger.komisiPresenter;
+                acc[pId].entryCount += 1;
+            }
+
             return acc;
         }, {});
 

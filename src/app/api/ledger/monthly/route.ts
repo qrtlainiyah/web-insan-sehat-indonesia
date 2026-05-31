@@ -27,7 +27,13 @@ export async function GET(request: NextRequest) {
                     year: targetYear,
                 },
                 include: {
-                    user: {
+                    scheduler: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                    presenter: {
                         select: {
                             id: true,
                             name: true,
@@ -36,8 +42,16 @@ export async function GET(request: NextRequest) {
                 },
             });
 
-            const totalAmount = ledgers.reduce((sum, ledger) => sum + ledger.amount, 0);
-            const userCount = new Set(ledgers.map(l => l.userId)).size;
+            const totalAmount = ledgers.reduce(
+                (sum, ledger) => sum + ledger.penghasilan,
+                0
+            );
+
+            const userCount = new Set(
+                ledgers.flatMap((l) =>
+                    [l.schedulerId, l.presenterId].filter((id): id is number => id !== null)
+                )
+            ).size;
 
             monthlyData.push({
                 month,
